@@ -45,7 +45,7 @@ public class LoadMap : MonoBehaviour
         if (!Input.location.isEnabledByUser)
         {
             Debug.Log("location is not Enabled By User");
-            yield break;
+            //yield break;
         }
 
         // Запускаем службу перед запросом местоположения
@@ -63,14 +63,14 @@ public class LoadMap : MonoBehaviour
         if (maxWait < 1)
         {
             Debug.Log("Истекло время ожидания");
-            yield break;
+            //yield break;
         }
 
         // Соединение не удалось
         if (Input.location.status == LocationServiceStatus.Failed)
         {
             Debug.Log("Невозможно определить местоположение устройства");
-            yield break;
+            //yield break;
         }
         else
         {
