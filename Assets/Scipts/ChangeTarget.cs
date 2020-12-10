@@ -9,7 +9,7 @@ public class ChangeTarget : MonoBehaviour
     public GameObject capsule;
     void Start()
     {
-        var o = Instantiate(capsule, new Vector3(0, 0, 0), Quaternion.identity);
+        var o = Instantiate(capsule, transform.position, Quaternion.identity);
         o.transform.SetParent(transform);
     }
 

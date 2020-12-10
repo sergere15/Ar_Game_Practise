@@ -1,24 +1,56 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+// users https://csc-2020-team-all-16.dmitrybarashev.repl.co/get_test
+// targets https://csc-2020-team-all-16.dmitrybarashev.repl.co/get_test2
+// log:  https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_log?log=2&p=2
+// reg:  https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_reg?log=3&p=3&x=45.0286129&y=38.9919699
+// add target https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_add_target?x=3&y=3
+// del target https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_del_target?id=3
+// set loc https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_set_loc?id=4&x=45.1017958&y=38.9827543
+// del user https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_del_user?id=3
 
+// 45.0531|39.0278
 public class LoadMap : MonoBehaviour
 {
     // consts:
     private const float min_cam_height = 8;
     private const float max_cam_height = 18;
-    private const float base_can_height = 15;
+    private const float base_cam_height = 15;
     private const float max_cam_shift = 8;
     private const float min_cam_shift = 3;
     private const float earth_rad = 6371000;
     public const string key = "BTXAvoGI5LkkTpGQ76JCFA0CwiHcg0Gr";
 
+	public class ObjectOnMap
+	{
+        public ObjectOnMap(int id_, GameObject marker_, Vector2 positons_)
+		{
+            id = id_;
+            marker = marker_;
+            positon = positons_;
+        }
+
+        public int id;
+        public GameObject marker;
+        public Vector2 positon;
+    }
+    private ObjectOnMap[] markers;
+    private ObjectOnMap[] players;
+    private ObjectOnMap me;
+
 
     public Camera camera;
-    public GameObject sphere;
-    private Vector2 sphere_position = new Vector2(45, 39);
+    public GameObject sphere_pref;
+    public GameObject camera_marker;
+    public GameObject cube_pref;
     public Renderer map_render;
+
+    private Vector2 sphere_position = new Vector2(45, 39);
     private Vector2 map_center = new Vector2(45.06f, 38.94f); // latitude(вертикаль, широта), longitude(вбока, долгота)
+    private int my_id;
     
+
     private string map_type = "hyb"; // map,hyb,sat,none,transparent
     private string url;
     
@@ -34,9 +66,23 @@ public class LoadMap : MonoBehaviour
     {
         LoadAllMaps();
         FillMapDistance();
-        sphere.transform.position = new Vector3(1000, 0, 1000);
+        StartCoroutine(LoadObjects());
         StartCoroutine(LocationTest());
+        my_id = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>().id;
+        Debug.Log("Id: " + my_id.ToString());
     }
+
+    public void NotMoveable()
+	{
+        is_moveable = false;
+    }
+
+    public void Moveable()
+    {
+        is_moveable = true;
+    }
+
+
 
     private IEnumerator LocationTest()
     {
@@ -50,6 +96,7 @@ public class LoadMap : MonoBehaviour
 
         // Запускаем службу перед запросом местоположения
         Input.location.Start();
+        Debug.Log("test");
 
         // Ждем, пока служба инициализируется
         int maxWait = 20;
@@ -75,7 +122,7 @@ public class LoadMap : MonoBehaviour
         else
         {
             // Доступ предоставлен, и можно получить значение местоположения
-            Debug.Log("Местоположение:" + Input.location.lastData.latitude + ";" + Input.location.lastData.longitude);
+            //Debug.Log("Местоположение:" + Input.location.lastData.latitude + ";" + Input.location.lastData.longitude);
         }
 
         // Остановка службы, если нет необходимости постоянно запрашивать обновления местоположения
@@ -106,7 +153,7 @@ public class LoadMap : MonoBehaviour
                 --zoom;
                 map_render.material.mainTexture = textures[zoom];
                 camera.transform.position -= new Vector3(0, camera.transform.position.y - max_cam_height, 0);
-                MoveSphere();
+                MoveObjects();
             }
         }
         if (camera.transform.position.y + mw > max_cam_height)
@@ -117,7 +164,7 @@ public class LoadMap : MonoBehaviour
                 ++zoom;
                 map_render.material.mainTexture = textures[zoom];
                 camera.transform.position -= new Vector3(0, camera.transform.position.y - min_cam_height, 0);
-                MoveSphere();
+                MoveObjects();
             }
         }
         var x = Input.GetAxis("Mouse X");
@@ -128,6 +175,7 @@ public class LoadMap : MonoBehaviour
             y = 0;
         }
         camera.transform.position += new Vector3(x, mw, y);
+        camera_marker.transform.position = new Vector3(camera_marker.transform.position.x, 0, camera_marker.transform.position.z);
         if (MustWeUpdateMap())
             ResetMapCenter();
 
@@ -164,6 +212,7 @@ public class LoadMap : MonoBehaviour
     + "&center=" + position.x.ToString().Replace(",", ".") + "," + position.y.ToString().Replace(",", ".");
         //Debug.Log(url);
         StartCoroutine(LoadImage(texture_index, activate));
+
     }
 
     private IEnumerator LoadImage(int texture_index, bool activate = false)
@@ -189,7 +238,7 @@ public class LoadMap : MonoBehaviour
                 map_render.material.mainTexture = textures[texture_index];
                 is_moveable = true;
                 camera.transform.position = new Vector3(0, camera.transform.position.y, 0);
-                MoveSphere();
+                MoveObjects();
             }
         }
 		else
@@ -253,14 +302,149 @@ public class LoadMap : MonoBehaviour
         map_distance_by_zoom[6] = 200000f / 1.45f;
     }
 
-    private void MoveSphere()
+    private void MoveObject(ObjectOnMap obj)
 	{
-        var lat = -LatitudeToMetters(sphere_position.x - map_center.x);
-        var lon = -LongitudeToMetters(sphere_position.y - map_center.y);
+        var lat = -LatitudeToMetters(obj.positon.x - map_center.x);
+        var lon = -LongitudeToMetters(obj.positon.y - map_center.y);
         //Debug.Log("lat: " + lat + "; lon: " + lon + "; zoom: " + zoom);
-        var vector_to_sphere = new Vector2(lat / map_distance_by_zoom[zoom], lon / map_distance_by_zoom[zoom]);
+        //var vector_to_sphere = new Vector2(lat / map_distance_by_zoom[zoom], lon / map_distance_by_zoom[zoom]);
         //Debug.Log("vector_to_sphere 2: " + vector_to_sphere.x + "; " + vector_to_sphere.y);
-        sphere.transform.position = new Vector3(lon / map_distance_by_zoom[zoom], 0, lat / map_distance_by_zoom[zoom]);
+        obj.marker.transform.position = new Vector3(lon / map_distance_by_zoom[zoom], 0, lat / map_distance_by_zoom[zoom]);
         //Debug.Log("sphere.transform.position: " + sphere.transform.position);
+    }
+
+    private void MoveObjects()
+    {
+        if (players == null || markers == null)
+            return;
+        foreach (var player in players)
+            MoveObject(player);
+
+        foreach (var marker in markers)
+            MoveObject(marker);
+
+    }
+
+    private ObjectOnMap LoadObject(string player_data, GameObject prefab)
+    {
+        var data = player_data.Split('|');
+        //Debug.Log(player_data);
+        var id = int.Parse(data[0]);
+        var x = float.Parse(data[1], System.Globalization.CultureInfo.InvariantCulture);
+        var y = float.Parse(data[2], System.Globalization.CultureInfo.InvariantCulture);
+        return new ObjectOnMap(id, Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity), new Vector2(x, y));
+    }
+
+    private void FindMe()
+    {
+        foreach (var player in players)
+            if (player.id == my_id)
+            {
+                me = player;
+                return;
+            }
+
+    }
+
+    private void ColoringMe()
+	{
+        me.marker.GetComponent<Renderer>().material.color = new Color( 1, 0, 0);
+    }
+
+    public IEnumerator LoadObjects()
+    {
+        if (players != null)
+            DeleteObjects(players);
+        if (markers != null)
+            DeleteObjects(markers);
+
+        var url = "https://csc-2020-team-all-16.dmitrybarashev.repl.co/get_test";
+        var www = new WWW(url);
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (www.error == null)
+        {
+            yield return new WaitForSeconds(0.5f);
+            var str = www.text.Split('"')[1];
+            //Debug.Log(www.text);
+            var players_data = str.Split('*');
+            players = new ObjectOnMap[players_data.Length];
+            for (int i = 0; i < players_data.Length; ++i)
+            {
+                var obj = LoadObject(players_data[i], cube_pref);
+
+                players[i] = obj;
+                //Debug.Log(obj.id);
+                //Debug.Log(obj.positon.x);
+                //Debug.Log(obj.positon.y);
+            }
+
+            //Debug.Log(www.text);
+        }
+        else
+        {
+            Debug.Log(www.error);
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        url = "https://csc-2020-team-all-16.dmitrybarashev.repl.co/get_test2";
+        www = new WWW(url);
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f); ;
+        }
+
+        if (www.error == null)
+        {
+            yield return new WaitForSeconds(0.5f);
+            var str = www.text.Split('"')[1];
+            var markers_data = str.Split('*');
+            markers = new ObjectOnMap[markers_data.Length];
+            for (int i = 0; i < markers_data.Length; ++i)
+            {
+                var obj = LoadObject(markers_data[i], sphere_pref);
+
+                markers[i] = obj;
+                //Debug.Log(obj.id);
+                //Debug.Log(obj.positon.x);
+                //Debug.Log(obj.positon.y);
+            }
+
+            //Debug.Log(www.text);
+        }
+        else
+        {
+            Debug.Log(www.error);
+            yield return new WaitForSeconds(0.5f);
+        }
+        FindMe();
+        ColoringMe();
+        MoveObjects();
+    }
+
+    public void DeleteObjects(ObjectOnMap[] objects)
+	{
+        foreach (var obj in objects)
+            Destroy(obj.marker);
+	}
+
+    public void OpenCameraPressed()
+    {
+        float dist_square = 10000f;
+        foreach (var charcter in markers)
+        {
+            var lat = -LatitudeToMetters(me.positon.x - charcter.positon.x);
+            var lon = -LongitudeToMetters(me.positon.y - charcter.positon.y);
+            float dist = lat * lat + lon * lon;
+            Debug.Log("dist to "+ charcter.id.ToString() + ": " + dist.ToString());
+            if (dist_square > dist)
+                dist_square = dist;
+        }
+        Debug.Log(dist_square);
+        if (dist_square < 2500)
+            SceneManager.LoadScene("CameraScene", LoadSceneMode.Single);
     }
 }
