@@ -1,7 +1,16 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+// users https://csc-2020-team-all-16.dmitrybarashev.repl.co/get_test
+// targets https://csc-2020-team-all-16.dmitrybarashev.repl.co/get_test2
+// log:  https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_log?log=2&p=2
+// reg:  https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_reg?log=3&p=3&x=45.0286129&y=38.9919699
+// add target https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_add_target?x=3&y=3
+// del target https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_del_target?id=3
+// set loc https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_set_loc?id=4&x=45.1017958&y=38.9827543
+// del user https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_del_user?id=3
 
+// 45.0531|39.0278
 public class LoadMap : MonoBehaviour
 {
     // consts:
@@ -58,7 +67,7 @@ public class LoadMap : MonoBehaviour
         LoadAllMaps();
         FillMapDistance();
         StartCoroutine(LoadObjects());
-        StartCoroutine(LocationTest());
+        //StartCoroutine(LocationTest());
         my_id = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>().id;
         Debug.Log("Id: " + my_id.ToString());
     }

@@ -6,7 +6,7 @@ public class DataForGame : MonoBehaviour
 {
     public int id;
     public string data;
-
+    public bool isCustomer;
 
     void Start()
     {

@@ -18,6 +18,13 @@ public class MenuControls : MonoBehaviour
     void Start()
     {
         data = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>();
+        data.isCustomer = true;
+    }
+
+    public void SetUserType(bool isCustomer)
+	{
+        data.isCustomer = isCustomer;
+        Debug.Log(data.isCustomer);
     }
     public void PlayPressed()
     {
@@ -28,9 +35,12 @@ public class MenuControls : MonoBehaviour
 
     private IEnumerator LoginRequest(string log, string pas)
     {
-        var url = "https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_log?log=" +
-            log + "&p=" +
-            pas;
+        string url;
+        if (data.isCustomer)
+            url = "http://localhost:8080/store/customerSignIn/";
+        else
+            url = "http://localhost:8080/store/sellerSignIn/";
+        url = url + log + "/" + pas;
         var www = new WWW(url);
         while (!www.isDone)
         {
@@ -39,7 +49,8 @@ public class MenuControls : MonoBehaviour
 
         if (www.error == null)
         {
-            if (www.text != "false")
+            var response = JsonUtility.FromJson<JSONTemplate.Response>(www.text);
+            if (response.code != 0)
             {
                 data.id = int.Parse(www.text);
                 SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
@@ -70,11 +81,12 @@ public class MenuControls : MonoBehaviour
 
     private IEnumerator RegistrationRequest(string log, string pas)
     {
-        //45,38.9   45.13,39.13
-        var x = Random.Range(45f, 45.13f).ToString().Replace(',', '.');
-        var y = Random.Range(38.9f, 38.13f).ToString().Replace(',', '.');
-        var url = "https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_reg?log=" +
-             log +"&p=" + pas +"&x="+ x + "&y=" +y;
+        string url;
+        if (data.isCustomer)
+            url = "http://localhost:8080/store/customerSignUp/";
+        else
+            url = "http://localhost:8080/store/sellerSignUp/";
+        url = url + log + "/" + pas;
         var www = new WWW(url);
         Debug.Log(url);
         while (!www.isDone)
@@ -85,7 +97,11 @@ public class MenuControls : MonoBehaviour
         if (www.error == null)
         {
             Debug.Log(www.text);
-            if (www.text == "true")
+            var myObject = JsonUtility.FromJson<JSONTemplate.Response>(www.text);
+            Debug.Log(myObject.description);
+            Debug.Log(myObject.code);
+            Debug.Log(myObject.value);
+            if (myObject.code == 0)
             {
 
                 Log_text.text = "Регистарция прошла успешно";
