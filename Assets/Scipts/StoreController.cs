@@ -9,9 +9,9 @@ public class StoreController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-       /* for (int i = 0; i < count;  ++i)
-            Instantiate(prefab, this.transform);*/
-    }
+		for (int i = 0; i < count; ++i)
+			Instantiate(prefab, this.transform);
+	}
 
     public IEnumerator InitStoreList()
     {

@@ -29,4 +29,10 @@ public class ItemIcon : MonoBehaviour
         GetComponentInParent<GameMenuControls>().Buying(item);
         Debug.Log("Buy Pressed!");
     }
+
+    public void DeletePressed()
+    {
+        Debug.Log("Delete Pressed!");
+        StartCoroutine(GetComponentInParent<GameMenuControls>().DeleteItem(gameObject, item));
+    }
 }

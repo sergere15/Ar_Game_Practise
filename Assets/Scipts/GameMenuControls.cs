@@ -65,6 +65,30 @@ public class GameMenuControls : MonoBehaviour
         }
     }
 
+    public IEnumerator DeleteItem(GameObject itemNote, JSONTemplate.Item item)
+    {
+        string url = "http://localhost:8080/store/deleteItem/"
+            + data.loginUser + "/"
+            + data.passwordUser + "/"
+            + item.id.ToString();
+        var www = new WWW(url);
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (www.error == null)
+        {
+            Debug.Log(www.text);
+            Debug.Log("item deleted!");
+            Destroy(itemNote);
+        }
+        else
+        {
+            Debug.Log(www.error);
+        }
+    }
+
     public void InitItemList(string login)
 	{
         storeMenu.SetActive(false);
