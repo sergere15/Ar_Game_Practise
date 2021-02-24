@@ -6,60 +6,20 @@ using UnityEngine.UI;
 
 public class GameMenuControls : MonoBehaviour
 {
-    public Text X;
-    public Text Y;
     public Text add_char_log;
-    public GameObject Map;
+    public Text balance;
+    private DataForGame data;
+    public GameObject storeMenu;
+    public GameObject itemMenu;
 
-    private int my_id;
 
     void Start()
     {
-        my_id = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>().id;
+        data = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>();
+        StartCoroutine(storeMenu.GetComponentInChildren<StoreController>().InitStoreList());
+        Debug.Log(transform.childCount);
+        balance.text = data.amount.ToString();
     }
-
-    public void AddPressed()
-    {
-    // 
-        Debug.Log("Add pressed!");
-        Debug.Log(X.text);
-        Debug.Log(Y.text);
-        StartCoroutine(AddCharacterRequest(X.text, Y.text));
-        add_char_log.text = "Добавляем персонажа";
-    }
-
-    private IEnumerator AddCharacterRequest(string x, string y)
-	{
-        // 45.0816099,38.9525191
-        var url = "https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_add_target?x=" +
-            x + "&y=" + y;
-        var www = new WWW(url);
-        Debug.Log(url);
-        while (!www.isDone)
-        {
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        if (www.error == null)
-        {
-            Debug.Log(www.text);
-            if (www.text == "true")
-            {
-
-                add_char_log.text = "Персонаж успешно добавлен";
-                StartCoroutine(Map.GetComponent<LoadMap>().LoadObjects());
-            }
-            else
-            {
-                add_char_log.text = "Стасян, ну ты конечно Дебил";
-            }
-        }
-        else
-        {
-            Debug.Log(www.error);
-        }
-    }
-
 
     public void ExitPressed()
     {
@@ -79,8 +39,12 @@ public class GameMenuControls : MonoBehaviour
 
     private IEnumerator DeleteAccountRequest()
     {
-        // 45.0816099,38.9525191
-        var url = "https://csc-2020-team-all-16.dmitrybarashev.repl.co/test_del_user?id=" + my_id;
+        string url;
+        if (data.isCustomer)
+            url = "http://localhost:8080/store/deleteCustomer/";
+        else
+            url = "http://localhost:8080/store/deleteSeller/";
+        url = url + data.loginUser + "/" + data.passwordUser;
         var www = new WWW(url);
         while (!www.isDone)
         {
@@ -94,6 +58,122 @@ public class GameMenuControls : MonoBehaviour
             Debug.Log("Account deleted!");
             Destroy(GameObject.FindGameObjectWithTag("DataForGame"));
             SceneManager.LoadScene("Menu", LoadSceneMode.Single);
+        }
+        else
+        {
+            Debug.Log(www.error);
+        }
+    }
+
+    public void InitItemList(string login)
+	{
+        storeMenu.SetActive(false);
+        itemMenu.SetActive(true);
+        data.loginStore = login;
+        StartCoroutine(itemMenu.GetComponentInChildren<StoreController>().InitItemList(login));
+    }
+    public IEnumerator UpdateBalanceCoroutine()
+    {
+        string url;
+        if (data.isCustomer)
+            url = "http://localhost:8080/store/customerSignIn/";
+        else
+            url = "http://localhost:8080/store/sellerSignIn/";
+        url = url + data.loginUser + "/" + data.passwordUser;
+        var www = new WWW(url);
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (www.error == null)
+        {
+            Debug.Log(www.text);
+            var response = JsonUtility.FromJson<JSONTemplate.Response>(www.text);
+            if (response.code == 0)
+            {
+                balance.text = response.value.ToString();
+            }
+            else
+            {
+                balance.text = "Unknown";
+            }
+        }
+        else
+        {
+            Debug.Log(www.error);
+        }
+    }
+
+    public void Buying(JSONTemplate.Item item)
+    {
+        if (data.amount >= item.cost)
+            StartCoroutine(BuyingCoroutine(item));
+    }
+
+    private IEnumerator BuyingCoroutine(JSONTemplate.Item item)
+    {
+        string url = "http://localhost:8080/store/buying/"
+            + data.loginUser + "/"
+            + data.loginStore + "/"
+            + item.id.ToString() + "/"
+            + data.loginUser;
+        var www = new WWW(url);
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (www.error == null)
+        {
+            Debug.Log(www.text);
+            var response = JsonUtility.FromJson<JSONTemplate.Response>(www.text);
+            if (response.code == 0)
+            {
+                data.amount -= item.cost;
+                balance.text = data.amount.ToString();
+            }
+            else
+            {
+                balance.text = "Unknown";
+            }
+        }
+        else
+        {
+            Debug.Log(www.error);
+        }
+    }
+
+    public void AddMoney()
+    {
+        StartCoroutine(AddMoneyCoroutine());
+    }
+
+    private IEnumerator AddMoneyCoroutine()
+    {
+        int value = 10;
+        string url = "http://localhost:8080/store/customer/addAmount/"
+            + data.loginUser + "/"
+            + value.ToString();
+        var www = new WWW(url);
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (www.error == null)
+        {
+            Debug.Log(www.text);
+            var response = JsonUtility.FromJson<JSONTemplate.Response>(www.text);
+            if (response.code == 0)
+            {
+                data.amount += value;
+                balance.text = data.amount.ToString();
+            }
+            else
+            {
+                balance.text = "Unknown";
+            }
         }
         else
         {

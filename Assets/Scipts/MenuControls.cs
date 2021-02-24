@@ -49,10 +49,13 @@ public class MenuControls : MonoBehaviour
 
         if (www.error == null)
         {
+            Debug.Log(www.text);
             var response = JsonUtility.FromJson<JSONTemplate.Response>(www.text);
-            if (response.code != 0)
+            if (response.code == 0)
             {
-                data.id = int.Parse(www.text);
+                data.loginUser = log;
+                data.passwordUser = pas;
+                data.amount = response.value;
                 SceneManager.LoadScene("MainMenu", LoadSceneMode.Single);
             }
             else
@@ -98,9 +101,7 @@ public class MenuControls : MonoBehaviour
         {
             Debug.Log(www.text);
             var myObject = JsonUtility.FromJson<JSONTemplate.Response>(www.text);
-            Debug.Log(myObject.description);
-            Debug.Log(myObject.code);
-            Debug.Log(myObject.value);
+            
             if (myObject.code == 0)
             {
 

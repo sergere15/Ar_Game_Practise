@@ -5,8 +5,12 @@ using UnityEngine;
 public class DataForGame : MonoBehaviour
 {
     public int id;
+    public int amount;
     public string data;
     public bool isCustomer;
+    public string loginUser;
+    public string loginStore;
+    public string passwordUser;
 
     void Start()
     {
