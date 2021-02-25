@@ -14,7 +14,9 @@ public class ItemIcon : MonoBehaviour
     public void Init(JSONTemplate.Item item, StoreController store)
     {
         this.store = store;
+        item.description = item.description.Replace("_", " ");
         this.item = item;
+
         itemName = transform.GetChild(0).GetComponent<Text>();
         itemDescription = transform.GetChild(1).GetComponent<Text>();
         itemCost = transform.GetChild(2).GetComponent<Text>();

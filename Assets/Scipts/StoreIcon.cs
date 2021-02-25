@@ -11,6 +11,7 @@ public class StoreIcon : MonoBehaviour
 
 	public void Init(JSONTemplate.Seller seller, StoreController store)
 	{
+        seller.description = seller.description.Replace("_", " ");
         this.storeMenu = store;
         storeName = transform.GetChild(0).GetComponent<Text>();
         storeDescription = transform.GetChild(1).GetComponent<Text>();

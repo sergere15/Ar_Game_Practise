@@ -28,4 +28,13 @@ public class JSONTemplate
         public string seller;
         public int cost;
     }
+
+    [System.Serializable]
+    public class Order
+    {
+        public long id;
+        public string item;
+        public string seller;
+        public string addres;
+    }
 }

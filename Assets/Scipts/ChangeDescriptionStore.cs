@@ -13,17 +13,20 @@ public class ChangeDescriptionStore : MonoBehaviour
         data = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>();
     }
 
-    public void Change()
+    public void ChangePressed()
     {
-         StartCoroutine(ChangeCoroutine(description.text));
+        Debug.Log("Change Pressed");
+        StartCoroutine(ChangeCoroutine(description.text));
     }
 
     private IEnumerator ChangeCoroutine(string text)
     {
+        text = text.Replace(" ", "_");
         string url = "http://localhost:8080/store/seller/setDescription/"
             + data.loginUser + "/"
             + data.passwordUser + "/"
             + text;
+        Debug.Log(url);
         var www = new WWW(url);
         while (!www.isDone)
         {

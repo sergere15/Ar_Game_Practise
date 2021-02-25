@@ -12,16 +12,21 @@ public class GameMenuControls : MonoBehaviour
     public GameObject storeMenu;
     public GameObject itemMenu;
     public GameObject itemSellerMenu;
+    public GameObject OrdersMenu;
 
 
     void Start()
     {
         data = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>();
         if (data.isCustomer)
+        {
             StartCoroutine(storeMenu.GetComponentInChildren<StoreController>().InitStoreList());
+            storeMenu.SetActive(true);
+        }
         else
         {
             StartCoroutine(itemSellerMenu.GetComponentInChildren<StoreController>().InitItemList(data.loginUser));
+            itemSellerMenu.SetActive(true);
         }
         balance.text = data.amount.ToString();
     }
@@ -95,6 +100,31 @@ public class GameMenuControls : MonoBehaviour
         }
     }
 
+    public IEnumerator CloseOrder(GameObject orderNote, JSONTemplate.Order order)
+    {
+        string url = "http://localhost:8080/store/seller/deleteOrder/"
+            + data.loginUser + "/"
+            + data.passwordUser + "/"
+            + order.id;
+        var www = new WWW(url);
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (www.error == null)
+        {
+            Debug.Log(www.text);
+            Debug.Log("order closed!");
+            Destroy(orderNote);
+        }
+        else
+        {
+            Debug.Log(www.error);
+            Debug.Log(url);
+        }
+    }
+
     public void InitItemList(string login)
 	{
         storeMenu.SetActive(false);
@@ -140,6 +170,13 @@ public class GameMenuControls : MonoBehaviour
         Debug.Log("UpdateItemSellerMenu");
         itemSellerMenu.GetComponentInChildren<StoreController>().CleanList();
         StartCoroutine(itemSellerMenu.GetComponentInChildren<StoreController>().InitItemList(data.loginUser));
+    }
+
+    public void UpdateOrdersMenu()
+    {
+        Debug.Log("UpdateOrdersMenu");
+        OrdersMenu.GetComponentInChildren<StoreController>().CleanList();
+        StartCoroutine(OrdersMenu.GetComponentInChildren<StoreController>().InitOrderList(data.loginUser));
     }
 
     public void Buying(JSONTemplate.Item item)
