@@ -11,13 +11,18 @@ public class GameMenuControls : MonoBehaviour
     private DataForGame data;
     public GameObject storeMenu;
     public GameObject itemMenu;
+    public GameObject itemSellerMenu;
 
 
     void Start()
     {
         data = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>();
-        StartCoroutine(storeMenu.GetComponentInChildren<StoreController>().InitStoreList());
-        Debug.Log(transform.childCount);
+        if (data.isCustomer)
+            StartCoroutine(storeMenu.GetComponentInChildren<StoreController>().InitStoreList());
+        else
+        {
+            StartCoroutine(itemSellerMenu.GetComponentInChildren<StoreController>().InitItemList(data.loginUser));
+        }
         balance.text = data.amount.ToString();
     }
 
@@ -67,7 +72,7 @@ public class GameMenuControls : MonoBehaviour
 
     public IEnumerator DeleteItem(GameObject itemNote, JSONTemplate.Item item)
     {
-        string url = "http://localhost:8080/store/deleteItem/"
+        string url = "http://localhost:8080/store/seller/deleteItem/"
             + data.loginUser + "/"
             + data.passwordUser + "/"
             + item.id.ToString();
@@ -86,6 +91,7 @@ public class GameMenuControls : MonoBehaviour
         else
         {
             Debug.Log(www.error);
+            Debug.Log(url);
         }
     }
 
@@ -127,6 +133,13 @@ public class GameMenuControls : MonoBehaviour
         {
             Debug.Log(www.error);
         }
+    }
+
+    public void UpdateItemSellerMenu()
+	{
+        Debug.Log("UpdateItemSellerMenu");
+        itemSellerMenu.GetComponentInChildren<StoreController>().CleanList();
+        StartCoroutine(itemSellerMenu.GetComponentInChildren<StoreController>().InitItemList(data.loginUser));
     }
 
     public void Buying(JSONTemplate.Item item)

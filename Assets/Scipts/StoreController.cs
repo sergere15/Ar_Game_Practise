@@ -77,4 +77,12 @@ public class StoreController : MonoBehaviour
             Debug.Log(www.error);
         }
     }
+
+    public void CleanList()
+	{
+        Debug.Log(transform.childCount);
+        foreach (Transform child in transform)
+            DestroyImmediate(child.gameObject);
+        Debug.Log(transform.childCount);
+    }
 }

@@ -3,27 +3,33 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChangeDescriptionStore : MonoBehaviour
+public class AddItem : MonoBehaviour
 {
+    public Text name;
     public Text description;
+    public Text cost;
     private DataForGame data;
-    // Start is called before the first frame update
     void Start()
     {
         data = GameObject.FindGameObjectWithTag("DataForGame").GetComponent<DataForGame>();
     }
 
-    public void Change()
+    public void AddPressed()
     {
-         StartCoroutine(ChangeCoroutine(description.text));
+        Debug.Log("Add Pressed");
+        int.Parse(cost.text);
+        if (name.text.Length > 0 && description.text.Length > 0 && cost.text.Length > 0)
+            StartCoroutine(AddItenCoroutine());
+        GetComponentInParent<GameMenuControls>().UpdateItemSellerMenu();
     }
 
-    private IEnumerator ChangeCoroutine(string text)
+    private IEnumerator AddItenCoroutine()
     {
-        string url = "http://localhost:8080/store/seller/setDescription/"
+        string url = "http://localhost:8080/store/seller/addItem/"
             + data.loginUser + "/"
-            + data.passwordUser + "/"
-            + text;
+            + name.text + "/"
+            + cost.text + "/"
+            + description.text;
         var www = new WWW(url);
         while (!www.isDone)
         {
