@@ -105,7 +105,7 @@ public class GameMenuControls : MonoBehaviour
         string url = "http://localhost:8080/store/seller/deleteOrder/"
             + data.loginUser + "/"
             + data.passwordUser + "/"
-            + order.id;
+            + order.id.ToString();
         var www = new WWW(url);
         while (!www.isDone)
         {
@@ -130,6 +130,7 @@ public class GameMenuControls : MonoBehaviour
         storeMenu.SetActive(false);
         itemMenu.SetActive(true);
         data.loginStore = login;
+        itemMenu.GetComponentInChildren<StoreController>().CleanList();
         StartCoroutine(itemMenu.GetComponentInChildren<StoreController>().InitItemList(login));
     }
     public IEnumerator UpdateBalanceCoroutine()
