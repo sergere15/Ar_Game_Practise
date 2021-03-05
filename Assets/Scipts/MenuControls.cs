@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -85,7 +86,6 @@ public class MenuControls : MonoBehaviour
 
     public void LoadTest()
 	{
-
         StartCoroutine(LoadTestCoroutine());
     }
 
@@ -109,16 +109,50 @@ public class MenuControls : MonoBehaviour
             file.Close();
             var r = "test";
 			var obj = Resources.Load<GameObject>(r);
-			GameObject instance = Instantiate(Resources.Load(r, typeof(GameObject))) as GameObject;
-			instance.transform.position = new Vector3(0, 0, 0);
+			//GameObject instance = Instantiate(Resources.Load(r, typeof(GameObject))) as GameObject;
+			//instance.transform.position = new Vector3(0, 0, 0);
 			if (obj == null)
 				Debug.Log("null");
 			else
 			{
-				Instantiate(obj);
-				obj.transform.position = new Vector3(0, 0, 0);
+				Instantiate(obj).transform.position = new Vector3(0, 0, 0);
 			}
 		}
+        else
+        {
+            Debug.Log(www.error);
+        }
+    }
+
+    public void UpLoadTest()
+    {
+        StartCoroutine(UpLoadTestCoroutine());
+    }
+
+    private IEnumerator UpLoadTestCoroutine()
+    {
+
+        var bytes = default(byte[]);
+        var file = new StreamReader("test.prefab");
+        using (var memstream = new MemoryStream())
+        {
+            file.BaseStream.CopyTo(memstream);
+            bytes = memstream.ToArray();
+        }
+        string url = "http://localhost:8080/store/upload/" + Convert.ToBase64String(bytes);
+        Debug.Log(url);
+        var www = new WWW(url);
+
+        while (!www.isDone)
+        {
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        if (www.error == null)
+        {
+            
+            Debug.Log(www.text);
+        }
         else
         {
             Debug.Log(www.error);
