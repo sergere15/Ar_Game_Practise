@@ -82,6 +82,21 @@ public class MenuControls : MonoBehaviour
         Debug.Log("Registration!");
     }
 
+    public void LoadTest()
+	{
+        //var r = "C:/Users/ACER/Documents/q/Test.prefab";
+        var r = "q/Test";
+        var obj = Resources.Load<GameObject>(r);
+        GameObject instance = Instantiate(Resources.Load(r, typeof(GameObject))) as GameObject;
+        instance.transform.position = new Vector3(0, 0, 0);
+        if (obj == null)
+            Debug.Log("null");
+        else
+        {
+            Instantiate(obj);
+            obj.transform.position = new Vector3(0, 0, 0);
+        }
+    }
     private IEnumerator RegistrationRequest(string log, string pas)
     {
         string url;
