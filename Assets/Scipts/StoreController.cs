@@ -58,7 +58,6 @@ public class StoreController : MonoBehaviour
         if (www.error == null)
         {
             string str = ',' + www.text.Substring(1, www.text.Length - 2);
-            Debug.Log(str);
 
             var response = str.Split('}');
             foreach (string sellerStr in response)
@@ -111,12 +110,10 @@ public class StoreController : MonoBehaviour
 
     public void CleanList()
 	{
-        Debug.Log(transform.childCount);
         foreach (Transform child in transform)
         {
             child.gameObject.SetActive(false);
             Destroy(child.gameObject);
         }
-        Debug.Log(transform.childCount);
     }
 }

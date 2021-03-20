@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -41,10 +40,6 @@ public class GameMenuControls : MonoBehaviour
     public void DeleteAccountPressed()
     {
         StartCoroutine(DeleteAccountRequest());
-        return;
-        Debug.Log("Exit pressed!");
-        Destroy(GameObject.FindGameObjectWithTag("DataForGame"));
-        SceneManager.LoadScene("Menu", LoadSceneMode.Single);
     }
 
     private IEnumerator DeleteAccountRequest()
@@ -89,7 +84,6 @@ public class GameMenuControls : MonoBehaviour
 
         if (www.error == null)
         {
-            Debug.Log(www.text);
             Debug.Log("item deleted!");
             Destroy(itemNote);
         }

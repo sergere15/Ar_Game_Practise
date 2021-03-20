@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,6 +13,7 @@ public class MenuControls : MonoBehaviour
     public Text Log_text;
 
     private DataForGame data;
+    //private GameObject obj;
 
     void Start()
     {
@@ -84,80 +82,6 @@ public class MenuControls : MonoBehaviour
         Debug.Log("Registration!");
     }
 
-    public void LoadTest()
-	{
-        StartCoroutine(LoadTestCoroutine());
-    }
-
-    private IEnumerator LoadTestCoroutine()
-	{
-        //var r = "C:/Users/ACER/Documents/q/Test.prefab";
-        
-
-        string url = "http://localhost:8080/store/files/y";
-        var www = new WWW(url);
-        while (!www.isDone)
-        {
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        if (www.error == null)
-        {
-            var file = new StreamWriter("Assets/Resources/test.prefab");
-            file.Write(www.text);
-            //Debug.Log(www.text);
-            file.Close();
-            var r = "test";
-			var obj = Resources.Load<GameObject>(r);
-			//GameObject instance = Instantiate(Resources.Load(r, typeof(GameObject))) as GameObject;
-			//instance.transform.position = new Vector3(0, 0, 0);
-			if (obj == null)
-				Debug.Log("null");
-			else
-			{
-				Instantiate(obj).transform.position = new Vector3(0, 0, 0);
-			}
-		}
-        else
-        {
-            Debug.Log(www.error);
-        }
-    }
-
-    public void UpLoadTest()
-    {
-        StartCoroutine(UpLoadTestCoroutine());
-    }
-
-    private IEnumerator UpLoadTestCoroutine()
-    {
-
-        var bytes = default(byte[]);
-        var file = new StreamReader("test.prefab");
-        using (var memstream = new MemoryStream())
-        {
-            file.BaseStream.CopyTo(memstream);
-            bytes = memstream.ToArray();
-        }
-        string url = "http://localhost:8080/store/upload/" + Convert.ToBase64String(bytes);
-        Debug.Log(url);
-        var www = new WWW(url);
-
-        while (!www.isDone)
-        {
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        if (www.error == null)
-        {
-            
-            Debug.Log(www.text);
-        }
-        else
-        {
-            Debug.Log(www.error);
-        }
-    }
     private IEnumerator RegistrationRequest(string log, string pas)
     {
         string url;
